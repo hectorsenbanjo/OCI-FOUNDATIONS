@@ -25,6 +25,9 @@ This is useful when you want to isolate environments (e.g., dev, test, productio
 oci iam domain create \
   --compartment-id <sandbox_compartment_ocid> \
   --name "sandbox-domain" \
+ --description "Identity domain for sandbox testing" \
+  --license-type "free"
+
 
 Replace <sandbox_compartment_ocid> with the OCID of your sandbox compartment.
 
@@ -37,5 +40,3 @@ After creating a domain, you can add users, groups, and policies inside it.
 Free license is enough for basic IAM; choose Premium if you need features like adaptive security and reporting.
 
 ✅ With this setup, you now have an Identity Domain (sandbox-domain) inside your sandbox compartment to manage users and resources securely.
-  --description "Identity domain for sandbox testing" \
-  --license-type "free"
