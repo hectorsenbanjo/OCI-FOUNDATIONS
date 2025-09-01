@@ -1,0 +1,141 @@
+🚀 Deploying a Compute Instance with Apache Web Server in OCI
+
+This guide walks through creating a Virtual Cloud Network (VCN), attaching an Internet Gateway, configuring route tables and security lists, and finally deploying a Compute instance running Apache Web Server.
+
+🔹 Step 1: Create a VCN
+
+Name: IAD-VCN-demo
+
+Compartment: sandbox
+
+IPv4 CIDR Block: 10.0.0.0/16
+
+👉 This creates an isolated virtual network inside OCI.
+
+🔹 Step 2: Create a Subnet
+
+Name: IAD-SNET-01
+
+Type: Regional (recommended)
+
+CIDR Block: 10.0.0.0/24
+
+Access: Public (since we need Internet access for the web server)
+
+Route Table: Default
+
+Security List: Default
+
+👉 At this point, we have a VCN and a public subnet ready to host compute resources.
+
+🔹 Step 3: Create an Internet Gateway
+
+Name: IGW
+
+Compartment: sandbox
+
+👉 This enables outbound traffic from the subnet to the Internet.
+
+🔹 Step 4: Update the Route Table
+
+Go to the Route Table
+
+Create a rule:
+
+Destination CIDR: 0.0.0.0/0
+
+Target Type: Internet Gateway
+
+Target: IGW
+
+👉 Now traffic from the subnet can reach the Internet.
+
+🔹 Step 5: Update the Security List
+
+Go to Default Security List
+
+Add Ingress Rule:
+
+Source CIDR: 0.0.0.0/0
+
+Port: 80 (HTTP)
+
+👉 This allows incoming web traffic.
+
+🔹 Step 6: Create a Compute Instance
+
+Compartment: sandbox
+
+Image: Oracle Linux 8
+
+Shape: AMD VM.Standard.E2.1 (1 OCPU, 6 GB RAM)
+
+VCN/Subnet: Select IAD-VCN-demo and IAD-SNET-01
+
+SSH Key: Upload your public key (demokey.pub)
+
+👉 Once created, you’ll get a public IP for SSH access.
+
+🔹 Step 7: Connect via SSH
+
+From Cloud Shell or your local terminal:
+
+ssh -i demokey opc@<Public-IP>
+
+
+Accept with yes.
+
+Test Internet access:
+
+ping www.google.com
+
+🔹 Step 8: Install Apache Web Server
+
+Run the following commands inside the compute instance:
+
+# Update system
+sudo dnf update -y
+
+# Install Apache HTTP Server
+sudo dnf install -y httpd
+
+# Start and enable Apache service
+sudo systemctl start httpd
+sudo systemctl enable httpd
+
+# Allow HTTP traffic through firewall (if applicable)
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --reload
+
+
+Verify Apache is running:
+
+systemctl status httpd
+
+🔹 Step 9: Test the Web Server
+
+Open your browser → http://<Public-IP>
+
+You should see the Apache default welcome page 🎉
+
+⚡ Terraform Equivalent (Optional)
+resource "oci_core_vcn" "demo_vcn" {
+  cidr_block     = "10.0.0.0/16"
+  display_name   = "IAD-VCN-demo"
+  compartment_id = var.compartment_id
+}
+
+resource "oci_core_internet_gateway" "demo_igw" {
+  display_name   = "IGW"
+  compartment_id = var.compartment_id
+  vcn_id         = oci_core_vcn.demo_vcn.id
+}
+
+
+✅ At this point, you have:
+
+A VCN with a public subnet
+
+An Internet Gateway + Route Rules + Security Rules
+
+A Compute Instance with Apache Web Server accessible from the Internet.
